@@ -22,6 +22,7 @@ def generate_answer(retriever, query: str):
     system_prompt = (
         "You are an AI assistant built to answer questions based strictly on the Swiggy Annual Report. "
         "Use the following pieces of retrieved context to answer the question. "
+        "Please provide a summary if the answer is long"
         "If you don't know the answer or if the answer is not in the context, just say that you don't know. "
         "Do not hallucinate or use outside knowledge.\n\n"
         f"Context:\n{context_text}"
