@@ -1,0 +1,17 @@
+# Environments
+venv/
+.env
+
+# Database (Local Vector Store)
+chroma/
+db/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS generated files
+.DS_Store
+Thumbs.db
