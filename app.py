@@ -1,37 +1,47 @@
 import streamlit as st
 import os
 
-# Import our custom modules
+# Import custom modules
 from src.ingestion import ingest_pdf_to_chroma
 from src.retrieval import get_retriever
 from src.generation import generate_answer
 
 # Set page config for a wider, more professional look
-st.set_page_config(page_title="Swiggy AI Assistant", page_icon="🍔", layout="wide")
+st.set_page_config(page_title="Swiggy AI Assistant", layout="wide")
 
-# Securely load the GitHub token
+# Load the GitHub token
 os.environ["GITHUB_TOKEN"] = os.environ.get("GITHUB_TOKEN", "")
 
+# Only cache the raw vector database, not the retriever
 @st.cache_resource(show_spinner=False)
-def initialize_database():
+def initialize_vectorstore():
     """Initializes and caches the vector database."""
-    vectorstore = ingest_pdf_to_chroma("data/Annual-Report-FY-2023-24.pdf")
-    retriever = get_retriever(vectorstore)
-    return retriever
+    return ingest_pdf_to_chroma("data/Annual-Report-FY-2023-24.pdf")
 
-# --- UI Sidebar ---
+# UI Sidebar 
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/en/1/12/Swiggy_logo.svg", width=150)
     st.title("System Architecture")
     st.info(
         "This RAG application strictly queries the Swiggy FY 2023-24 Annual Report. "
         "It utilizes ChromaDB for semantic vector search and GPT-4o via GitHub Models "
         "for context-grounded answer generation."
     )
+    
+    # Add a slider to control the k-value
+    st.subheader(" Retrieval Settings")
+    k_value = st.slider(
+        "Number of Context Chunks (k)", 
+        min_value=1, 
+        max_value=25, 
+        value=10,
+        help="Higher values give the AI more context to read, but take longer to process."
+    )
+    
     st.divider()
+    st.caption("Developed for the Newel Engineering Internship Submission.")
 
-# --- Main Chat Interface ---
-st.title("Swiggy Annual Report Assistant 🍔")
+# Main Chat Interface 
+st.title("Swiggy Annual Report Assistant ")
 st.markdown("Ask anything about Swiggy's financials, risks, or operations for the 2023-24 fiscal year.")
 
 # Initialize chat history in Streamlit session state
@@ -45,19 +55,20 @@ for message in st.session_state.messages:
 
 # Load Database
 with st.spinner("Initializing Vector Database..."):
-    retriever = initialize_database()
+    vectorstore = initialize_vectorstore()
 
 # React to user chat input
 if prompt := st.chat_input("E.g., Who is the Group CEO?"):
     
-    # 1. Display user message in chat UI
     st.chat_message("user").markdown(prompt)
-    # 2. Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # 3. Generate and display assistant response
     with st.chat_message("assistant"):
-        with st.spinner("Searching the Annual Report..."):
+        # Tell the user exactly how many chunks are being searched
+        with st.spinner(f"Searching the top {k_value} chunks in the Annual Report..."):
+            
+            # Create the retriever dynamically using the slider's value
+            retriever = get_retriever(vectorstore, k=k_value)
             response = generate_answer(retriever, prompt)
             
             st.markdown(response["answer"])
@@ -69,5 +80,4 @@ if prompt := st.chat_input("E.g., Who is the Group CEO?"):
                     st.caption(doc.page_content)
                     st.divider()
 
-    # 4. Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response["answer"]})
