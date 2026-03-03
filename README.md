@@ -1,6 +1,8 @@
 # Swiggy Annual Report AI Assistant 
 
-A high-performance Retrieval-Augmented Generation (RAG) application designed to extract and analyze data from the Swiggy FY 2023-24 Annual Report. 
+A Retrieval-Augmented Generation (RAG) application designed to extract and analyze data from the Swiggy FY 2023-24 Annual Report. 
+Source link:-
+https://www.swiggy.com/corporate/wp-content/uploads/2024/10/Annual-Report-FY-2023-24-1.pdf
 
 ## Features
 - **Modular Architecture:** Clean separation of concerns (Ingestion, Retrieval, Generation).
@@ -10,10 +12,11 @@ A high-performance Retrieval-Augmented Generation (RAG) application designed to 
 
 ## Project Structure
 ```text
-├── data/           # Source PDF (Swiggy Annual Report)
+├── data/           
 ├── src/            
-│   ├── ingestion.py   # PDF processing & vector storage logic
-│   ├── retrieval.py   # Similarity search configuration
-│   └── generation.py  # GPT-4o API integration & prompting
-├── app.py          # Streamlit UI Layer
+│   ├── ingestion.py   
+│   ├── retrieval.py  
+│   └── generation.py  
+├── app.py          
 └── README.md
+
